@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             TextField(
               controller: _urlController,
               decoration: const InputDecoration(
-                hintText: 'e.g., http://100.x.x.x:8000',
+                hintText: 'e.g., http://100.x.x.x:8100',
                 border: OutlineInputBorder(),
                 filled: true,
                 fillColor: Color(0xFF3E3E5C),
@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
             const Text(
-              'Enter the Tailscale IP of your Windows Desktop where Gideon Core is running to enable secure remote sync.',
+              'Enter the IP address and dynamically assigned port of your Windows Desktop where Gideon Core is running (check the Python console output for the active port, typically starting at 8100).',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
             const SizedBox(height: 32),

@@ -12,7 +12,7 @@ Gideon is a personal AI operating layer designed to sit on top of Windows (initi
 - **Dynamic AI Providers:** Supports NVIDIA APIs, OpenAI, Anthropic, and local models.
 
 ## Development Status
-- **Phase 1 (In Progress):** Preliminary NVIDIA API Audit complete, and high-level architectural constraints established.
+- **Phase 1-8 Complete:** Backend Multi-Agent Orchestration, Long-Term Memory, Skills, Automation, and API Sync Layer are implemented.
 
 Please see `ARCHITECTURE.md` for a deep dive into Gideon's design principles and `NVIDIA_API_AUDIT.md` for details on verified model capabilities.
 
@@ -22,9 +22,10 @@ The Gideon backend exposes a REST API built with FastAPI, which is required for 
 
 1. Ensure your `NVIDIA_API_KEY` is set in your environment or a `.env` file.
 2. Install dependencies: `pip install -r requirements.txt`
-3. Run the server:
+3. Run the server using the dynamic port launcher:
 ```bash
 ./run_api.sh
 # OR manually:
-uvicorn api:app --host 0.0.0.0 --port 8000
+python3 start_server.py
 ```
+*(Note: To avoid interfering with standard dev environments, the server automatically finds an available port starting at 8100, rather than using 8000).*

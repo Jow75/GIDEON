@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  String _baseUrl = "http://127.0.0.1:8000";
+  String _baseUrl = "http://127.0.0.1:8100";
   // The secret matches the default in the Python backend. In a real app, this should be configurable.
   final String _syncSecret = "default_dev_secret_change_in_production";
 
@@ -13,7 +13,7 @@ class ApiService {
 
   Future<void> _loadBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    _baseUrl = prefs.getString('gideon_backend_url') ?? "http://127.0.0.1:8000";
+    _baseUrl = prefs.getString('gideon_backend_url') ?? "http://127.0.0.1:8100";
   }
 
   Future<void> setBaseUrl(String url) async {
