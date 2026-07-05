@@ -1,5 +1,5 @@
 import requests
-from typing import List
+from typing import List, Dict, Any, Optional
 from .base import AIProvider, Message
 from config.settings import settings
 
@@ -40,3 +40,26 @@ class NvidiaProvider(AIProvider):
 
         data = response.json()
         return data["choices"][0]["message"]["content"]
+
+    def generate_embeddings(self, texts: List[str], model: str) -> List[List[float]]:
+        """Generate embeddings using the NVIDIA API."""
+        url = f"{self.base_url}/embeddings"
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "input": texts,
+            "model": model,
+            "input_type": "query"
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+        response.raise_for_status()
+
+        data = response.json()
+        # Sort by index to ensure order matches input
+        embeddings = [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
+        return embeddings

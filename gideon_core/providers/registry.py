@@ -14,10 +14,15 @@ class CapabilityRegistry:
         self._initialize_defaults()
 
     def _initialize_defaults(self):
-        # Register models based on our NVIDIA audit
+        # Register models based on our NVIDIA audit that we actually verified
         self.register(ModelCapability("nvidia", "meta/llama-3.1-70b-instruct", ["commander", "reasoning", "general"]))
         self.register(ModelCapability("nvidia", "meta/llama-3.1-8b-instruct", ["fast", "formatting", "background"]))
-        self.register(ModelCapability("nvidia", "mistralai/codestral-22b-instruct-v0.1", ["coding"]))
+
+        # The specific coding models audited seem to throw 404s on the /chat/completions endpoint for this specific key tier.
+        # We will fallback to the general reasoning model (llama-3.1-70b-instruct) for coding tasks for now to maintain stability.
+        self.register(ModelCapability("nvidia", "meta/llama-3.1-70b-instruct", ["coding"]))
+
+        self.register(ModelCapability("nvidia", "nvidia/nv-embed-v1", ["embedding"]))
 
     def register(self, capability: ModelCapability):
         self.models.append(capability)
