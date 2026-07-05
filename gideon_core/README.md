@@ -15,3 +15,16 @@ Gideon is a personal AI operating layer designed to sit on top of Windows (initi
 - **Phase 1 (In Progress):** Preliminary NVIDIA API Audit complete, and high-level architectural constraints established.
 
 Please see `ARCHITECTURE.md` for a deep dive into Gideon's design principles and `NVIDIA_API_AUDIT.md` for details on verified model capabilities.
+
+## Running the Backend
+
+The Gideon backend exposes a REST API built with FastAPI, which is required for the Flutter UI and network synchronization to function.
+
+1. Ensure your `NVIDIA_API_KEY` is set in your environment or a `.env` file.
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run the server:
+```bash
+./run_api.sh
+# OR manually:
+uvicorn api:app --host 0.0.0.0 --port 8000
+```

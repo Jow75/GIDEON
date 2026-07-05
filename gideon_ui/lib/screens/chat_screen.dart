@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/message_bubble.dart';
+import 'settings_screen.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -40,6 +41,17 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: AppBar(
         title: const Text('Gideon AI'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          )
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -53,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: Colors.blueGrey.shade800,
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      "Active Mission: ${chatProvider.currentMission}",
+                      "Active Mission: \${chatProvider.currentMission}",
                       textAlign: TextAlign.center,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),

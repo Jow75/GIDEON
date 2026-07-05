@@ -70,3 +70,18 @@ Example Workflow for a Coding Task:
 ## 7. Personality Engine
 
 Gideon's tone and communication style are decoupled from its logical reasoning. A configuration layer injects system prompts that define the active persona (Professional, Friendly, Concise, Detailed), allowing the user to adapt Gideon's presentation to their current preference without altering backend business logic.
+
+## 8. Synchronization & Connectivity (Phase 8)
+
+Gideon employs a **Local Network Sync + VPN** architecture to synchronize memory, World State, and conversations between the Windows Desktop and Android device.
+
+**Why Local + VPN?**
+To maintain strict privacy and avoid cloud hosting costs, the `gideon_core` (Python backend) runs exclusively on the primary machine (Windows Desktop). The database (ChromaDB) and API keys never leave this host.
+
+**The Sync Mechanism:**
+1. **Local API:** `gideon_core` exposes a FastAPI server binding to `0.0.0.0`.
+2. **Dynamic Endpoint:** The `gideon_ui` (Flutter) app allows the user to configure the backend IP.
+    - On Desktop: Connects to `127.0.0.1:8000`.
+    - On Mobile (Home Wi-Fi): Connects to `192.168.x.x:8000`.
+    - On Mobile (Remote): Connects via VPN.
+3. **VPN Solution (Tailscale):** To access Gideon while away from the home network, the user installs a zero-config mesh VPN like Tailscale on both the Desktop and the Android device. The Flutter app is configured to connect to the Desktop's static Tailscale IP (e.g., `100.x.x.x:8000`). This provides secure, end-to-end encrypted remote access to Gideon's automation and memory without exposing the local network to the public internet.
