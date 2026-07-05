@@ -32,17 +32,19 @@ Return ONLY a JSON array of step objects, in this exact format:
 
         response_text = self.router.execute_task(required_tags=["reasoning"], messages=messages)
 
-        # Parse JSON
+        plan_json_str = None
         json_match = re.search(r'```json\s*(.*?)\s*```', response_text, re.DOTALL)
-        if not json_match:
-            # Fallback
-            json_match = type('obj', (object,), {'group': lambda self, n: response_text.strip()})()
+        if json_match:
+            plan_json_str = json_match.group(1)
+        elif response_text.strip().startswith('[') and response_text.strip().endswith(']'):
+            plan_json_str = response_text.strip()
 
-        try:
-            plan = json.loads(json_match.group(1))
-            if isinstance(plan, list):
-                return plan
-        except Exception as e:
-            print(f"[Planner Error: {e}]")
+        if plan_json_str:
+            try:
+                plan = json.loads(plan_json_str)
+                if isinstance(plan, list):
+                    return plan
+            except Exception as e:
+                print(f"[Planner Error: {e}]")
 
         return [{"step": 1, "action": "fallback", "description": "Execute request directly."}]
