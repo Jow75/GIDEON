@@ -1,6 +1,5 @@
 import unittest
 from memory.history import ConversationHistory
-from providers.base import Message
 
 class TestConversationHistory(unittest.TestCase):
     def test_add_message(self):

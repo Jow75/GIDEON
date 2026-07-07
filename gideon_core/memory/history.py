@@ -1,5 +1,4 @@
 from typing import List
-from pydantic import BaseModel
 from providers.base import Message
 
 class ConversationHistory:

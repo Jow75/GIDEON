@@ -1,5 +1,4 @@
 import unittest
-from orchestration.automation import AutomationAgent
 from skills.desktop import LaunchApplicationSkill
 
 class TestAutomationFramework(unittest.TestCase):
@@ -9,8 +8,9 @@ class TestAutomationFramework(unittest.TestCase):
         self.assertIn("app_name", skill.parameters["required"])
 
     def test_launch_app_validation(self):
+        import asyncio
         skill = LaunchApplicationSkill()
-        res = skill.execute()
+        res = asyncio.run(skill.execute())
         self.assertEqual(res, "Error: app_name is required.")
 
 if __name__ == '__main__':

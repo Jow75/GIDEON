@@ -1,6 +1,7 @@
 import unittest
 from fastapi.testclient import TestClient
 from api import app, gideon
+from core.auth import AuthManager, UserRole, DeviceIdentity
 
 client = TestClient(app)
 
@@ -12,10 +13,13 @@ class TestSyncAPI(unittest.TestCase):
     def test_sync_endpoint_authorized(self):
         if gideon:
             gideon.history.clear()
-            gideon.history.add_user_message("Hello from test")
+            gideon.history.add_message(gideon.session_id, "user", "Hello from test")
             gideon.world_state["Active Mission"] = "Test Mission"
-
-        response = client.get("/api/sync", headers={"x-sync-token": "default_dev_secret_change_in_production"})
+            
+        device = DeviceIdentity(device_id="test_sync", device_type="test")
+        token = AuthManager.create_access_token("user1", UserRole.USER, device)
+    
+        response = client.get("/api/sync", headers={"Authorization": f"Bearer {token}"})
         self.assertEqual(response.status_code, 200)
         data = response.json()
 

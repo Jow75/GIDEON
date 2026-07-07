@@ -1,4 +1,4 @@
-from typing import Dict, Any, Optional
+from typing import Optional
 
 class ModelCapability:
     def __init__(self, provider_name: str, model_id: str, tags: list[str], cost_tier: str = "low"):

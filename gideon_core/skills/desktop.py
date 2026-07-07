@@ -1,17 +1,26 @@
 from .base import Skill
 from typing import Dict, Any
-import subprocess
-import os
-import platform
+from core.manifest import SkillManifest
+from core.os.factory import get_os
 
 class LaunchApplicationSkill(Skill):
+    manifest = SkillManifest(
+        name="launch_application",
+        version="1.0.0",
+        description="Launches a desktop application by name or executable.",
+        permissions=[],
+        required_capabilities=[],
+        requires_confirmation=False,
+        execution_category="system"
+    )
+
     @property
     def name(self) -> str:
-        return "launch_application"
+        return self.manifest.name
 
     @property
     def description(self) -> str:
-        return "Launches a desktop application by name or executable."
+        return self.manifest.description
 
     @property
     def parameters(self) -> Dict[str, Any]:
@@ -26,34 +35,12 @@ class LaunchApplicationSkill(Skill):
             "required": ["app_name"]
         }
 
-    def execute(self, app_name: str = None, **kwargs) -> str:
+    async def execute(self, app_name: str = None, **kwargs) -> str:
         if not app_name:
             return "Error: app_name is required."
 
-        system = platform.system()
+        os_interface = get_os()
         try:
-            if system == "Windows":
-                # Safer alternative to start with shell=True
-                # os.startfile safely opens a file or application using its associated program
-                # or executable path without invoking the shell interpreter.
-                try:
-                    os.startfile(app_name)
-                    return f"Successfully sent command to launch {app_name} on Windows."
-                except AttributeError:
-                    # Fallback if startfile is missing in some environments
-                    subprocess.Popen([app_name])
-                    return f"Successfully sent command to launch {app_name} on Windows."
-            elif system == "Darwin":
-                # macOS
-                subprocess.Popen(["open", "-a", app_name])
-                return f"Successfully sent command to launch {app_name} on macOS."
-            elif system == "Linux":
-                # Linux
-                subprocess.Popen([app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-                return f"Successfully sent command to launch {app_name} on Linux."
-            else:
-                return f"Error: Unsupported OS for launching apps ({system})"
-        except FileNotFoundError:
-            return f"Error: Application '{app_name}' could not be found."
+            return await os_interface.open_application(app_name)
         except Exception as e:
             return f"Error launching application {app_name}: {str(e)}"

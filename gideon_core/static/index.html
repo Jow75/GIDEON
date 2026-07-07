@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gideon UI</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 20px; display: flex; height: 100vh; overflow: hidden; box-sizing: border-box; }
+        .panel { background: #1e293b; border-radius: 8px; padding: 20px; margin: 10px; display: flex; flex-direction: column; overflow: hidden; }
+        .chat-panel { flex: 2; }
+        .state-panel { flex: 1; }
+        h2 { margin-top: 0; font-size: 1.2rem; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .messages { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px; border-radius: 6px; background: #334155; }
+        .message.user { background: #0369a1; align-self: flex-end; }
+        .message.gideon { background: #0f766e; align-self: flex-start; }
+        .input-box { display: flex; margin-top: 10px; }
+        input { flex: 1; padding: 10px; border: none; border-radius: 4px; outline: none; background: #0f172a; color: white; }
+        button { padding: 10px 20px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; border-radius: 4px; cursor: pointer; margin-left: 10px; }
+        button:hover { background: #7dd3fc; }
+        .log-list { font-family: monospace; font-size: 0.85rem; color: #94a3b8; overflow-y: auto; flex: 1; margin-top: 10px; }
+        .log-entry { border-bottom: 1px solid #334155; padding: 4px 0; }
+        .state-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #334155; }
+        .state-item strong { color: #f1f5f9; }
+        .state-item span { color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <div class="panel chat-panel">
+        <h2>Gideon Conversation</h2>
+        <div class="messages" id="messages"></div>
+        <div class="input-box">
+            <input type="text" id="chat-input" placeholder="Give an instruction...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <div class="panel state-panel">
+        <h2>World State</h2>
+        <div id="world-state"></div>
+        <h2 style="margin-top: 20px;">Event Bus Activity</h2>
+        <div class="log-list" id="event-log"></div>
+    </div>
+
+    <script>
+        const ws = new WebSocket(`ws://${window.location.host}/ws`);
+        const messagesDiv = document.getElementById('messages');
+        const eventLogDiv = document.getElementById('event-log');
+        const worldStateDiv = document.getElementById('world-state');
+        
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            
+            // Add to event log
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            logEntry.innerText = `[${data.type}] ${data.source}: ${JSON.stringify(data.payload).substring(0, 50)}...`;
+            eventLogDiv.prepend(logEntry);
+            if (eventLogDiv.children.length > 50) eventLogDiv.lastChild.remove();
+
+            // Handle specific events
+            if (data.type === 'device_telemetry') {
+                updateWorldState('Device Telemetry', data.payload.cpu_percent + '% CPU');
+            } else if (data.type === 'user_input') {
+                addMessage('user', data.payload);
+            } else if (data.type === 'response_generated') {
+                addMessage('gideon', data.payload);
+            }
+        };
+
+        function addMessage(role, text) {
+            const msg = document.createElement('div');
+            msg.className = `message ${role}`;
+            msg.innerText = text;
+            messagesDiv.appendChild(msg);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function updateWorldState(key, value) {
+            let el = document.getElementById(`state-${key}`);
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 'state-item';
+                el.id = `state-${key}`;
+                el.innerHTML = `<strong>${key}</strong> <span></span>`;
+                worldStateDiv.appendChild(el);
+            }
+            el.querySelector('span').innerText = value;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const text = input.value;
+            if (!text) return;
+            
+            input.value = '';
+            addMessage('user', text);
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-sync-token': 'default_dev_secret_change_in_production'
+                    },
+                    body: JSON.stringify({ message: text, device: "Web Browser" })
+                });
+                const data = await res.json();
+                addMessage('gideon', data.response);
+            } catch (e) {
+                addMessage('gideon', `Error: ${e.message}`);
+            }
+        }
+
+        document.getElementById('chat-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List
 from pydantic import BaseModel
 
 class Message(BaseModel):
@@ -10,7 +10,7 @@ class AIProvider(ABC):
     """Abstract base class for AI providers following the Strategy Pattern."""
 
     @abstractmethod
-    def generate_completion(
+    async def generate_completion(
         self,
         messages: List[Message],
         model: str,
@@ -18,4 +18,7 @@ class AIProvider(ABC):
         max_tokens: int = 1000
     ) -> str:
         """Generate a text completion."""
-        pass
+
+    @abstractmethod
+    async def generate_embeddings(self, texts: List[str], model: str) -> List[List[float]]:
+        """Generate embeddings for a list of texts."""

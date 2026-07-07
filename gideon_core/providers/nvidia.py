@@ -1,18 +1,21 @@
-import requests
-from typing import List, Dict, Any, Optional
+import httpx
+from typing import List
 from .base import AIProvider, Message
 from config.settings import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NvidiaProvider(AIProvider):
     """NVIDIA NIM provider implementation."""
 
-    def __init__(self):
-        self.api_key = settings.nvidia_api_key
-        self.base_url = "https://integrate.api.nvidia.com/v1"
+    def __init__(self, api_key: str = None, base_url: str = None):
+        self.api_key = api_key or settings.nvidia_api_key
+        self.base_url = base_url or "https://integrate.api.nvidia.com/v1"
         if not self.api_key:
             raise ValueError("NVIDIA API key not configured.")
 
-    def generate_completion(
+    async def generate_completion(
         self,
         messages: List[Message],
         model: str,
@@ -35,13 +38,14 @@ class NvidiaProvider(AIProvider):
             "max_tokens": max_tokens
         }
 
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
 
-        data = response.json()
-        return data["choices"][0]["message"]["content"]
+            data = response.json()
+            return data["choices"][0]["message"]["content"]
 
-    def generate_embeddings(self, texts: List[str], model: str) -> List[List[float]]:
+    async def generate_embeddings(self, texts: List[str], model: str) -> List[List[float]]:
         """Generate embeddings using the NVIDIA API."""
         url = f"{self.base_url}/embeddings"
         headers = {
@@ -56,10 +60,11 @@ class NvidiaProvider(AIProvider):
             "input_type": "query"
         }
 
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(url, headers=headers, json=payload)
+            response.raise_for_status()
 
-        data = response.json()
-        # Sort by index to ensure order matches input
-        embeddings = [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
-        return embeddings
+            data = response.json()
+            # Sort by index to ensure order matches input
+            embeddings = [item["embedding"] for item in sorted(data["data"], key=lambda x: x["index"])]
+            return embeddings
